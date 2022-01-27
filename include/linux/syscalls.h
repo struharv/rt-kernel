@@ -1217,6 +1217,7 @@ asmlinkage long sys_old_mmap(struct mmap_arg_struct __user *arg);
  */
 asmlinkage long sys_ni_syscall(void);
 
+
 #endif /* CONFIG_ARCH_HAS_SYSCALL_WRAPPER */
 
 
@@ -1397,4 +1398,7 @@ static inline unsigned int ksys_personality(unsigned int personality)
 	return old;
 }
 
+
+asmlinkage long sys_struhar_hello(void);
 #endif
+

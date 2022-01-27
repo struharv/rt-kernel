@@ -800,7 +800,7 @@ static void replenish_dl_entity(struct sched_dl_entity *dl_se,
 	struct rq *rq = rq_of_dl_rq(dl_rq);
 
 	BUG_ON(pi_se->dl_runtime <= 0);
-
+	printk("replenish_dl_entity: deadline = %lld, runtime=%lld, %d, %d", dl_se->dl_deadline, dl_se->runtime, dl_se->dl_yielded, dl_se->dl_throttled);
 	/*
 	 * This could be the case for a !-dl task that is boosted.
 	 * Just go with full inherited parameters.
@@ -823,6 +823,7 @@ static void replenish_dl_entity(struct sched_dl_entity *dl_se,
 		dl_se->deadline += pi_se->dl_period;
 		dl_se->runtime += pi_se->dl_runtime;
 	}
+	printk("replenish_dl_entity:new runtime=%lld",pi_se->dl_runtime);
 
 	/*
 	 * At this point, the deadline really should be "in
@@ -1022,7 +1023,7 @@ int start_dl_timer(struct sched_dl_entity *dl_se)
 	struct rq *rq = rq_of_dl_rq(dl_rq);
 	ktime_t now, act;
 	s64 delta;
-
+	printk("start_dl_timer!");
 	lockdep_assert_held(&rq->lock);
 
 	/*
@@ -1085,10 +1086,12 @@ static enum hrtimer_restart dl_task_timer(struct hrtimer *timer)
 	struct task_struct *p;
 	struct rq_flags rf;
 	struct rq *rq;
+	printk("dl_task_timer");
 
 #ifdef CONFIG_RT_GROUP_SCHED
 	/* Replenish dl group and check for preemption. */
 	if (!dl_entity_is_task(dl_se)) {
+		printk("dl_task_timer: !dl_entity_is_task(dl_se)");
 		struct rt_rq *rt_rq = rt_rq_of_dl_entity(dl_se);
 
 		rq = rq_of_dl_rq(dl_rq_of_se(dl_se));
@@ -1104,6 +1107,7 @@ static enum hrtimer_restart dl_task_timer(struct hrtimer *timer)
 #endif
 		dl_se->dl_throttled = 0;
 		if (rt_rq->rt_nr_running) {
+			printk("dl_task_timer: if (rt_rq->rt_nr_running)");
 			enqueue_dl_entity(dl_se, dl_se, ENQUEUE_REPLENISH);
 
 			resched_curr(rq);
@@ -1112,6 +1116,7 @@ static enum hrtimer_restart dl_task_timer(struct hrtimer *timer)
 				push_dl_task(rq);
 #endif
 		} else {
+			printk("dl_task_timer: if (rt_rq->rt_nr_running) ELSE");
 			replenish_dl_entity(dl_se, dl_se);
 			task_non_contending(dl_se);
 		}
@@ -1585,20 +1590,23 @@ enqueue_dl_entity(struct sched_dl_entity *dl_se,
 		  struct sched_dl_entity *pi_se, int flags)
 {
 	BUG_ON(on_dl_rq(dl_se));
-
+	printk("enqueue_dl_entity");
 	/*
 	 * If this is a wakeup or a new instance, the scheduling
 	 * parameters of the task might need updating. Otherwise,
 	 * we want a replenishment of its runtime.
 	 */
 	if (flags & ENQUEUE_WAKEUP) {
+		printk("enqueue_dl_entity: (flags & ENQUEUE_WAKEUP)");
 		task_contending(dl_se, flags);
 		update_dl_entity(dl_se, pi_se);
 	} else if (flags & ENQUEUE_REPLENISH) {
+		printk("enqueue_dl_entity: (flags & ENQUEUE_REPLENISH)");
 		replenish_dl_entity(dl_se, pi_se);
 	} else if ((flags & ENQUEUE_RESTORE) &&
 		  dl_time_before(dl_se->deadline,
 				 rq_clock(rq_of_dl_rq(dl_rq_of_se(dl_se))))) {
+		printk("enqueue_dl_entity: (flags & ENQUEUE_RESTORE .....)");
 		setup_new_dl_entity(dl_se);
 	}
 
@@ -1607,6 +1615,8 @@ enqueue_dl_entity(struct sched_dl_entity *dl_se,
 
 void dequeue_dl_entity(struct sched_dl_entity *dl_se)
 {
+	printk("dequeue_dl_entity");
+	
 	__dequeue_dl_entity(dl_se);
 }
 

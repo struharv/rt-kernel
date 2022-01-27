@@ -333,8 +333,6 @@ static void update_curr_rt(struct rq *rq)
 	u64 delta_exec;
 	u64 now;
 
-	printk("update_curr_rt");
-
 	if (curr->sched_class != &rt_sched_class)
 		return;
 
@@ -368,13 +366,19 @@ static void update_curr_rt(struct rq *rq)
 
 		/* A group exhausts the budget. */
 		if (dl_runtime_exceeded(dl_se)) {
+			printk("update_curr_rt: group exhousted budget");
+
 			dequeue_dl_entity(dl_se);
 
-			if (likely(start_dl_timer(dl_se)))
+			if (likely(start_dl_timer(dl_se))) {
 				dl_se->dl_throttled = 1;
-			else
+				printk("update_curr_rt: group exhousted budget -> throttled");
+			}
+			else {
+				printk("update_curr_rt: group exhousted budget -> enqueue_dl_entity");
 				enqueue_dl_entity(dl_se, dl_se,
 						  ENQUEUE_REPLENISH);
+			}
 
 			resched_curr(rq);
 		}
