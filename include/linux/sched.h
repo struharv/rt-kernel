@@ -502,7 +502,8 @@ struct sched_dl_entity {
 	u64				dl_period;	/* Separation of two instances (period) */
 	u64				dl_bw;		/* dl_runtime / dl_period		*/
 	u64				dl_density;	/* dl_runtime / dl_deadline		*/
-
+	
+	
 	/*
 	 * Actual scheduling parameters. Initialized with the values above,
 	 * they are continuously updated during task execution. Note that
@@ -541,6 +542,7 @@ struct sched_dl_entity {
 	unsigned int			dl_yielded        : 1;
 	unsigned int			dl_non_contending : 1;
 	unsigned int			dl_overrun	  : 1;
+	 
 
 	/*
 	 * Bandwidth enforcement timer. Each -deadline task has its
@@ -567,6 +569,7 @@ struct sched_dl_entity {
 	struct dl_rq			*dl_rq;
 	struct rt_rq			*my_q;
 #endif
+u64 	        struhar;
 };
 
 union rcu_special {

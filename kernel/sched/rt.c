@@ -352,30 +352,42 @@ static void update_curr_rt(struct rq *rq)
 
 	if (!dl_bandwidth_enabled())
 		return;
-
+	
+	
 	if (is_dl_group(rt_rq)) {
+		
+
 		struct sched_dl_entity *dl_se = dl_group_of(rt_rq);
+		if (dl_se->struhar) {
+
+		}
 
 		if (dl_se->dl_throttled) {
+			//trace_printk("STRUHAR: UPDATE_CURR_RT dl_se->dl_throttled\n");
+
 			resched_curr(rq);
 			return;
 		}
 
 		BUG_ON(rt_rq->rt_nr_running > rq->nr_running);
 		dl_se->runtime -= delta_exec;
-
+		trace_printk("STRUHAR:%d: UPDATE_CURR_RT %lld struhar=%d \n", curr->pid, dl_se->runtime, dl_se->struhar);
 		/* A group exhausts the budget. */
-		if (dl_runtime_exceeded(dl_se)) {
-			printk("update_curr_rt: group exhousted budget");
+		if (dl_runtime_exceeded(dl_se) || dl_se->struhar == 1) {
+			trace_printk("STRUHAR:%d: UPDATE_CURR_RT dl_runtime_exceeded\n", curr->pid);
+			trace_printk("update_curr_rt: group exhousted budget\n");
+
 
 			dequeue_dl_entity(dl_se);
 
 			if (likely(start_dl_timer(dl_se))) {
 				dl_se->dl_throttled = 1;
-				printk("update_curr_rt: group exhousted budget -> throttled");
+				trace_printk("STRUHAR:%d: THROTTLE\n", curr->pid);
+				trace_printk("update_curr_rt: group exhousted budget -> throttled\n");
 			}
 			else {
-				printk("update_curr_rt: group exhousted budget -> enqueue_dl_entity");
+				
+				trace_printk("update_curr_rt: group exhousted budget -> enqueue_dl_entity\n");
 				enqueue_dl_entity(dl_se, dl_se,
 						  ENQUEUE_REPLENISH);
 			}

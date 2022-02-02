@@ -800,7 +800,8 @@ static void replenish_dl_entity(struct sched_dl_entity *dl_se,
 	struct rq *rq = rq_of_dl_rq(dl_rq);
 
 	BUG_ON(pi_se->dl_runtime <= 0);
-	printk("replenish_dl_entity: deadline = %lld, runtime=%lld, %d, %d", dl_se->dl_deadline, dl_se->runtime, dl_se->dl_yielded, dl_se->dl_throttled);
+	trace_printk("replenish_dl_entity: deadline = %lld, runtime=%lld, %d, %d\n", dl_se->dl_deadline, dl_se->runtime, dl_se->dl_yielded, dl_se->dl_throttled);
+	
 	/*
 	 * This could be the case for a !-dl task that is boosted.
 	 * Just go with full inherited parameters.
@@ -821,10 +822,18 @@ static void replenish_dl_entity(struct sched_dl_entity *dl_se,
 	 */
 	while (dl_se->runtime <= 0) {
 		dl_se->deadline += pi_se->dl_period;
-		dl_se->runtime += pi_se->dl_runtime;
+		if (dl_se->struhar == 1) { 
+			dl_se->runtime = pi_se->dl_runtime; // custom throttle
+		} else {
+			dl_se->runtime += pi_se->dl_runtime;
+		}
 	}
-	printk("replenish_dl_entity:new runtime=%lld",pi_se->dl_runtime);
+ 
+	dl_se->struhar = 0;
 
+
+	trace_printk("replenish_dl_entity:new runtime=%lld\n",pi_se->dl_runtime);
+	trace_printk("STRUHAR: REPLENISH runtime=%lld deadline=%lld\n", dl_se->runtime, dl_se->deadline);
 	/*
 	 * At this point, the deadline really should be "in
 	 * the future" with respect to rq->clock. If it's
@@ -1023,7 +1032,7 @@ int start_dl_timer(struct sched_dl_entity *dl_se)
 	struct rq *rq = rq_of_dl_rq(dl_rq);
 	ktime_t now, act;
 	s64 delta;
-	printk("start_dl_timer!");
+	trace_printk("start_dl_timer!\n");
 	lockdep_assert_held(&rq->lock);
 
 	/*
@@ -1086,12 +1095,13 @@ static enum hrtimer_restart dl_task_timer(struct hrtimer *timer)
 	struct task_struct *p;
 	struct rq_flags rf;
 	struct rq *rq;
-	printk("dl_task_timer");
+	trace_printk("dl_task_timer\n");
+	trace_printk("STRUHAR: dl_task_timer\n");
 
 #ifdef CONFIG_RT_GROUP_SCHED
 	/* Replenish dl group and check for preemption. */
 	if (!dl_entity_is_task(dl_se)) {
-		printk("dl_task_timer: !dl_entity_is_task(dl_se)");
+		trace_printk("dl_task_timer: !dl_entity_is_task(dl_se)\n");
 		struct rt_rq *rt_rq = rt_rq_of_dl_entity(dl_se);
 
 		rq = rq_of_dl_rq(dl_rq_of_se(dl_se));
@@ -1107,7 +1117,7 @@ static enum hrtimer_restart dl_task_timer(struct hrtimer *timer)
 #endif
 		dl_se->dl_throttled = 0;
 		if (rt_rq->rt_nr_running) {
-			printk("dl_task_timer: if (rt_rq->rt_nr_running)");
+			trace_printk("dl_task_timer: if (rt_rq->rt_nr_running)\n");
 			enqueue_dl_entity(dl_se, dl_se, ENQUEUE_REPLENISH);
 
 			resched_curr(rq);
@@ -1116,7 +1126,7 @@ static enum hrtimer_restart dl_task_timer(struct hrtimer *timer)
 				push_dl_task(rq);
 #endif
 		} else {
-			printk("dl_task_timer: if (rt_rq->rt_nr_running) ELSE");
+			trace_printk("dl_task_timer: if (rt_rq->rt_nr_running) ELSE\n");
 			replenish_dl_entity(dl_se, dl_se);
 			task_non_contending(dl_se);
 		}
@@ -1590,23 +1600,26 @@ enqueue_dl_entity(struct sched_dl_entity *dl_se,
 		  struct sched_dl_entity *pi_se, int flags)
 {
 	BUG_ON(on_dl_rq(dl_se));
-	printk("enqueue_dl_entity");
+	
+	trace_printk("enqueue_dl_entity\n");
 	/*
 	 * If this is a wakeup or a new instance, the scheduling
 	 * parameters of the task might need updating. Otherwise,
 	 * we want a replenishment of its runtime.
 	 */
 	if (flags & ENQUEUE_WAKEUP) {
-		printk("enqueue_dl_entity: (flags & ENQUEUE_WAKEUP)");
+		
+		trace_printk("enqueue_dl_entity: (flags & ENQUEUE_WAKEUP)\n");
 		task_contending(dl_se, flags);
 		update_dl_entity(dl_se, pi_se);
 	} else if (flags & ENQUEUE_REPLENISH) {
-		printk("enqueue_dl_entity: (flags & ENQUEUE_REPLENISH)");
+		trace_printk("enqueue_dl_entity: (flags & ENQUEUE_REPLENISH)\n");
 		replenish_dl_entity(dl_se, pi_se);
 	} else if ((flags & ENQUEUE_RESTORE) &&
 		  dl_time_before(dl_se->deadline,
 				 rq_clock(rq_of_dl_rq(dl_rq_of_se(dl_se))))) {
-		printk("enqueue_dl_entity: (flags & ENQUEUE_RESTORE .....)");
+		
+		trace_printk("enqueue_dl_entity: (flags & ENQUEUE_RESTORE .....)\n");
 		setup_new_dl_entity(dl_se);
 	}
 
@@ -1615,8 +1628,7 @@ enqueue_dl_entity(struct sched_dl_entity *dl_se,
 
 void dequeue_dl_entity(struct sched_dl_entity *dl_se)
 {
-	printk("dequeue_dl_entity");
-	
+	trace_printk("dequeue_dl_entity\n");
 	__dequeue_dl_entity(dl_se);
 }
 
