@@ -801,7 +801,7 @@ static void replenish_dl_entity(struct sched_dl_entity *dl_se,
 
 	BUG_ON(pi_se->dl_runtime <= 0);
 	trace_printk("replenish_dl_entity: deadline = %lld, runtime=%lld, %d, %d\n", dl_se->dl_deadline, dl_se->runtime, dl_se->dl_yielded, dl_se->dl_throttled);
-	
+	trace_printk("XDEBUG:%d:REPLENISH\n", rq->curr->pid);
 	/*
 	 * This could be the case for a !-dl task that is boosted.
 	 * Just go with full inherited parameters.
@@ -1097,6 +1097,7 @@ static enum hrtimer_restart dl_task_timer(struct hrtimer *timer)
 	struct rq *rq;
 	trace_printk("dl_task_timer\n");
 	trace_printk("STRUHAR: dl_task_timer\n");
+	trace_printk("XDEBUB::dl_task_timer\n");
 
 #ifdef CONFIG_RT_GROUP_SCHED
 	/* Replenish dl group and check for preemption. */

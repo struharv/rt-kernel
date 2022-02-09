@@ -1399,7 +1399,7 @@ static inline unsigned int ksys_personality(unsigned int personality)
 }
 
 
-asmlinkage long sys_struhar_hello(void);
+asmlinkage long sys_struhar_done(void);
 asmlinkage long sys_struhar_start(void);
 #endif
 

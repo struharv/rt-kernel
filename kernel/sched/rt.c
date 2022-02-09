@@ -372,6 +372,7 @@ static void update_curr_rt(struct rq *rq)
 		BUG_ON(rt_rq->rt_nr_running > rq->nr_running);
 		dl_se->runtime -= delta_exec;
 		trace_printk("STRUHAR:%d: UPDATE_CURR_RT %lld struhar=%d \n", curr->pid, dl_se->runtime, dl_se->struhar);
+		trace_printk("XDEBUG:%d:UPDATE_CURR_RT:runtime=%lld\n", curr->pid, dl_se->runtime);
 		/* A group exhausts the budget. */
 		if (dl_runtime_exceeded(dl_se) || dl_se->struhar == 1) {
 			trace_printk("STRUHAR:%d: UPDATE_CURR_RT dl_runtime_exceeded\n", curr->pid);
@@ -382,11 +383,13 @@ static void update_curr_rt(struct rq *rq)
 
 			if (likely(start_dl_timer(dl_se))) {
 				dl_se->dl_throttled = 1;
+				trace_printk("XDEBUG:%d:THROTTLE\n", curr->pid);
+
 				trace_printk("STRUHAR:%d: THROTTLE\n", curr->pid);
 				trace_printk("update_curr_rt: group exhousted budget -> throttled\n");
 			}
 			else {
-				
+				trace_printk("XDEBUG:%d:THROTTLE1\n", curr->pid);
 				trace_printk("update_curr_rt: group exhousted budget -> enqueue_dl_entity\n");
 				enqueue_dl_entity(dl_se, dl_se,
 						  ENQUEUE_REPLENISH);
