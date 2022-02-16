@@ -12,7 +12,7 @@ asmlinkage long sys_struhar_start(void) {
 	struct rq_flags rf;
 	struct rq *rq;
 	
-    trace_printk("XDEBUG:%d:SYSCALL START\n", current->pid);    
+    trace_printk("XDEBUG:%d:SYSCALL_START\n", current->pid);    
     return 0;
 }
 
@@ -26,7 +26,7 @@ asmlinkage long sys_struhar_done(void) {
 	
 	p = current;
 
-    trace_printk("XDEBUG:%d:SYSCALL DONE\n", current->pid);
+    trace_printk("XDEBUG:%d:SYSCALL_DONE\n", current->pid);
     /*dl_se->runtime = 0; 
     dl_se->struhar = 1;
     
