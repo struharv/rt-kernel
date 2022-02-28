@@ -942,6 +942,7 @@ update_dl_revised_wakeup(struct sched_dl_entity *dl_se, struct rq *rq)
 	WARN_ON(dl_time_before(dl_se->deadline, rq_clock(rq)));
 
 	dl_se->runtime = (dl_se->dl_density * laxity) >> BW_SHIFT;
+	trace_printk("XDEBUG:%d:REVISED_WAKEUP:deadline=%lld:runtime=%lld\n", rq->curr->pid, dl_se->deadline, dl_se->runtime);
 }
 
 /*
@@ -1008,6 +1009,7 @@ static void update_dl_entity(struct sched_dl_entity *dl_se,
 
 		dl_se->deadline = rq_clock(rq) + pi_se->dl_deadline;
 		dl_se->runtime = pi_se->dl_runtime;
+		trace_printk("XDEBUG:%d:UPDATE_DL_ENTITY:deadline=%lld:runtime=%lld\n", rq->curr->pid, dl_se->deadline, dl_se->runtime);
 	}
 }
 
