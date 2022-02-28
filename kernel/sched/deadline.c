@@ -799,6 +799,8 @@ static void replenish_dl_entity(struct sched_dl_entity *dl_se,
 	struct dl_rq *dl_rq = dl_rq_of_se(dl_se);
 	struct rq *rq = rq_of_dl_rq(dl_rq);
 
+	
+
 	BUG_ON(pi_se->dl_runtime <= 0);
 	trace_printk("replenish_dl_entity: deadline = %lld, runtime=%lld, %d, %d\n", dl_se->dl_deadline, dl_se->runtime, dl_se->dl_yielded, dl_se->dl_throttled);
 	trace_printk("XDEBUG:%d:REPLENISH_DL_ENTITY\n", rq->curr->pid);
