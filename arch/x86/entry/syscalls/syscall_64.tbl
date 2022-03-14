@@ -357,6 +357,7 @@
 433	common	fspick			__x64_sys_fspick
 434 64  struhar_done	sys_struhar_done
 435 64  struhar_start	sys_struhar_start
+436 64  struhar_init	sys_struhar_init
 
 #
 # x32-specific system call numbers start at 512 to avoid cache impact

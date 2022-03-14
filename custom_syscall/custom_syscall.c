@@ -16,12 +16,18 @@ unsigned long timenow(void) {
 }
 
 
+asmlinkage long sys_struhar_init(long response_time) {
+
+
+}	
+
 asmlinkage long sys_struhar_start(void) {
 	struct task_struct *p;
 	struct rt_rq *rt_rq = rt_rq_of_se(&current->rt);
 	struct sched_dl_entity *dl_se = dl_group_of(rt_rq);
 	struct rq_flags rf;
 	struct rq *rq;
+	
 	current->struhar_response_time = 0;
 	current->struhar_instance_start = timenow();
 	
@@ -43,7 +49,7 @@ asmlinkage long sys_struhar_done(void) {
 	struct rq *rq;
 	long response_time = timenow()-current->struhar_instance_start;
 
-	p = current;
+	//p = current;
 	//current->struhar_response_time = 0;
 	trace_printk("XDEBUG::%d:RESPONSE_TIME:response=%lld\n", response_time);
     trace_printk("XDEBUG:%d:SYSCALL_DONE\n", current->pid);
