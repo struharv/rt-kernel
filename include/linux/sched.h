@@ -502,12 +502,6 @@ struct sched_dl_entity {
 	u64				dl_period;	/* Separation of two instances (period) */
 	u64				dl_bw;		/* dl_runtime / dl_period		*/
 	u64				dl_density;	/* dl_runtime / dl_deadline		*/
-	
-	u64				struhar_response_time;
-	u64				struhar_throttled_count;
-	u64				struhar_exp_response_time;
-	u64				struhar_budget;
-	u64				struhar_instance_start; 
 
 	
 	/*
@@ -621,6 +615,11 @@ struct task_struct {
 	/* Per task flags (PF_*), defined further below: */
 	unsigned int			flags;
 	unsigned int			ptrace;
+	u64				struhar_response_time;
+	u64				struhar_throttled_count;
+	u64				struhar_exp_response_time;
+	u64				struhar_budget;
+	u64				struhar_instance_start;
 
 #ifdef CONFIG_SMP
 	struct llist_node		wake_entry;

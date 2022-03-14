@@ -8,11 +8,11 @@
 
 
 
-unsigned long timenow() {
+/*unsigned long timenow() {
 	struct timeval timecheck;
 	gettimeofday(&timecheck, NULL);
 	return timecheck.tv_sec * 1000000 + (long)timecheck.tv_usec;
-}
+}*/
 
 
 asmlinkage long sys_struhar_start(void) {
@@ -22,15 +22,15 @@ asmlinkage long sys_struhar_start(void) {
 	struct rq_flags rf;
 	struct rq *rq;
 	current->struhar_response_time = 0;
-	current->struhar_instance_start = timenow();
+	current->struhar_instance_start = 0;//timenow();
 	
     trace_printk("XDEBUG:%d:SYSCALL_START\n", current->pid);    
     return 0;
 }
 
-void controller() {
+//void controller() {
 
-}
+//}
 
 
 
@@ -40,7 +40,7 @@ asmlinkage long sys_struhar_done(void) {
 	struct sched_dl_entity *dl_se = dl_group_of(rt_rq);
 	struct rq_flags rf;
 	struct rq *rq;
-	long response_time = timenow()-current->struhar_instance_start;
+	long response_time = 0;//timenow()-current->struhar_instance_start;
 
 	p = current;
 	//current->struhar_response_time = 0;
