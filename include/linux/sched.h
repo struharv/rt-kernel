@@ -507,8 +507,8 @@ struct sched_dl_entity {
 	u64				struhar_throttled_count;
 	u64				struhar_exp_response_time;
 	u64				struhar_budget;
-	u64				struhar_instance_start;
-	
+	u64				struhar_instance_start; 
+
 	
 	/*
 	 * Actual scheduling parameters. Initialized with the values above,

@@ -28,6 +28,11 @@ asmlinkage long sys_struhar_start(void) {
     return 0;
 }
 
+void controller() {
+
+}
+
+
 
 asmlinkage long sys_struhar_done(void) {
 	struct task_struct *p;
