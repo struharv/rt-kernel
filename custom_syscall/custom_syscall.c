@@ -16,9 +16,9 @@ unsigned long timenow(void) {
 }
 
 
-asmlinkage long sys_struhar_init(long response_time) {
-
-
+SYSCALL_DEFINE1(struhar_init, long, response_time) {
+	trace_printk("XDEBUG:%d:SYSCALL_INIT:response_time=%lld\n", current->pid, response_time);
+	current->struhar_exp_response_time = response_time;
 }	
 
 asmlinkage long sys_struhar_start(void) {
@@ -35,9 +35,10 @@ asmlinkage long sys_struhar_start(void) {
     return 0;
 }
 
-//void controller() {
 
-//}
+void controller(void) {
+
+}
 
 
 
