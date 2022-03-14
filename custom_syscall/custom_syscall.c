@@ -1,8 +1,18 @@
 #include <linux/kernel.h>
 #include <linux/string.h>
 #include <linux/syscalls.h>
+#include <linux/time.h>
 
 #include "../kernel/sched/sched.h"
+
+
+
+
+unsigned long timenow() {
+	struct timeval timecheck;
+	gettimeofday(&timecheck, NULL);
+	return timecheck.tv_sec * 1000000 + (long)timecheck.tv_usec;
+}
 
 
 asmlinkage long sys_struhar_start(void) {
@@ -11,6 +21,8 @@ asmlinkage long sys_struhar_start(void) {
 	struct sched_dl_entity *dl_se = dl_group_of(rt_rq);
 	struct rq_flags rf;
 	struct rq *rq;
+	current->struhar_response_time = 0;
+	current->struhar_instance_start = timenow();
 	
     trace_printk("XDEBUG:%d:SYSCALL_START\n", current->pid);    
     return 0;
@@ -23,9 +35,11 @@ asmlinkage long sys_struhar_done(void) {
 	struct sched_dl_entity *dl_se = dl_group_of(rt_rq);
 	struct rq_flags rf;
 	struct rq *rq;
-	
-	p = current;
+	long response_time = timenow()-current->struhar_instance_start;
 
+	p = current;
+	//current->struhar_response_time = 0;
+	trace_printk("XDEBUG::%d:RESPONSE_TIME:response=%lld\n", response_time);
     trace_printk("XDEBUG:%d:SYSCALL_DONE\n", current->pid);
     /*dl_se->runtime = 0; 
     dl_se->struhar = 1;
