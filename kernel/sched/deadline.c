@@ -846,6 +846,7 @@ static void replenish_dl_entity(struct sched_dl_entity *dl_se,
 	if (dl_time_before(dl_se->deadline, rq_clock(rq))) {
 		trace_printk("XDEBUG:%d:BEFOREDEADLINE:deadline=%lld:runtime=%lld\n", rq->curr->pid, dl_se->deadline, dl_se->runtime);
 		printk_deferred_once("sched: DL replenish lagged too much\n");
+		trace_printk("XDEBUG:%d:REPLENISH_DL_ENTITY1\n", rq->curr->pid);
 		dl_se->deadline = rq_clock(rq) + pi_se->dl_deadline;
 		dl_se->runtime = pi_se->dl_runtime;
 	}
@@ -942,7 +943,7 @@ update_dl_revised_wakeup(struct sched_dl_entity *dl_se, struct rq *rq)
 	WARN_ON(dl_time_before(dl_se->deadline, rq_clock(rq)));
 
 	dl_se->runtime = (dl_se->dl_density * laxity) >> BW_SHIFT;
-	trace_printk("XDEBUG:%d:REVISED_WAKEUP:deadline=%lld:runtime=%lld\n", rq->curr->pid, dl_se->deadline, dl_se->runtime);
+	trace_printk("XDEBUG:%d:REPLENISH_REVISED_WAKEUP:deadline=%lld:runtime=%lld\n", rq->curr->pid, dl_se->deadline, dl_se->runtime);
 }
 
 /*
