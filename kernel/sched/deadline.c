@@ -825,8 +825,8 @@ static void replenish_dl_entity(struct sched_dl_entity *dl_se,
 	while (dl_se->runtime <= 0) {
 		
 		dl_se->deadline += pi_se->dl_period;
-		dl_se->runtime += pi_se->dl_runtime;
-
+		dl_se->runtime += pi_se->dl_runtime;	
+		trace_printk("XDEBUG:%d:REPLENISH_BY:dl_runtime=%lld\n", rq->curr->pid, pi_se->dl_runtime);
 		trace_printk("XDEBUG:%d:REPLENISH:deadline=%lld:runtime=%lld\n", rq->curr->pid, dl_se->deadline, dl_se->runtime);
 	}
  
