@@ -32,6 +32,14 @@ void controller(struct task_struct *p) {
 	trace_printk("XDEBUG:%d:CONTROLLER:struhar_exp_response_time=%lld\n", p->pid, p->struhar_exp_response_time);
 	trace_printk("XDEBUG:%d:CONTROLLER:real_response_time=%lld\n", p->pid, response_time);
 
+	if (response_time > p->struhar_exp_response_time) {
+		dl_se->dl_runtime += 100000;
+
+	} else {
+		dl_se->dl_runtime -= 100000;
+
+	}
+	trace_printk("XDEBUG:%d:CONTROLLER:new-runtime=%lld\n", p->pid, dl_se->dl_runtime);	
 	// what is current budget?
 
 
