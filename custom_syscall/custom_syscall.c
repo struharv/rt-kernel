@@ -21,12 +21,29 @@ SYSCALL_DEFINE1(struhar_init, long, response_time) {
 	current->struhar_exp_response_time = response_time;
 }	
 
+
+
+void controller(struct task_struct *p) {
+	long response_time = timenow()-p->struhar_instance_start;
+
+	trace_printk("XDEBUG:%d:CONTROLLER\n", p->pid);
+	trace_printk("XDEBUG:%d:CONTROLLER:struhar_exp_response_time=%lld\n", p->pid, p->struhar_exp_response_time);
+
+
+}
+
+
+
+
 asmlinkage long sys_struhar_start(void) {
 	struct task_struct *p;
 	struct rt_rq *rt_rq = rt_rq_of_se(&current->rt);
 	struct sched_dl_entity *dl_se = dl_group_of(rt_rq);
 	struct rq_flags rf;
 	struct rq *rq;
+	
+	
+
 	
 	current->struhar_response_time = 0;
 	current->struhar_instance_start = timenow();
@@ -36,9 +53,6 @@ asmlinkage long sys_struhar_start(void) {
 }
 
 
-void controller(void) {
-
-}
 
 
 
@@ -54,6 +68,10 @@ asmlinkage long sys_struhar_done(void) {
 	//current->struhar_response_time = 0;
 	trace_printk("XDEBUG::%d:RESPONSE_TIME:response=%lld\n", response_time);
     trace_printk("XDEBUG:%d:SYSCALL_DONE\n", current->pid);
+    
+	controller(current);
+
+
     /*dl_se->runtime = 0; 
     dl_se->struhar = 1;
     
