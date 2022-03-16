@@ -28,17 +28,26 @@ void controller(struct task_struct *p) {
 	struct sched_dl_entity *dl_se = dl_group_of(rt_rq);
 	long response_time = timenow()-p->struhar_instance_start;
 
+	long runtime_max = 18000000
+	long runtime_min = 2000000
+
+
 	trace_printk("XDEBUG:%d:CONTROLLER\n", p->pid);
 	trace_printk("XDEBUG:%d:CONTROLLER:struhar_exp_response_time=%lld\n", p->pid, p->struhar_exp_response_time);
 	trace_printk("XDEBUG:%d:CONTROLLER:real_response_time=%lld\n", p->pid, response_time);
 
-	if (response_time > p->struhar_exp_response_time) {
-		dl_se->dl_runtime += 100000;
+	//if (response_time > p->struhar_exp_response_time) {
+	dl_se->dl_runtime += 100000;
 
-	} else {
-		dl_se->dl_runtime -= 100000;
-
+	if (dl_se->dl_runtime > runtime_max)
+	{
+		dl_se->dl_runtime = runtime_min;	
 	}
+	
+	//} else {
+	//	dl_se->dl_runtime -= 1000000;
+
+	//}
 	trace_printk("XDEBUG:%d:CONTROLLER:new-runtime=%lld\n", p->pid, dl_se->dl_runtime);	
 	// what is current budget?
 
