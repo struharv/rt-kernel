@@ -28,8 +28,8 @@ void controller(struct task_struct *p) {
 	struct sched_dl_entity *dl_se = dl_group_of(rt_rq);
 	long response_time = timenow()-p->struhar_instance_start;
 
-	long runtime_max = 18000000
-	long runtime_min = 2000000
+	long runtime_max = 18000000;
+	long runtime_min = 2000000;
 
 
 	trace_printk("XDEBUG:%d:CONTROLLER\n", p->pid);
@@ -43,7 +43,7 @@ void controller(struct task_struct *p) {
 	{
 		dl_se->dl_runtime = runtime_min;	
 	}
-	
+
 	//} else {
 	//	dl_se->dl_runtime -= 1000000;
 
