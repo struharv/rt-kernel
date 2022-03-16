@@ -24,10 +24,17 @@ SYSCALL_DEFINE1(struhar_init, long, response_time) {
 
 
 void controller(struct task_struct *p) {
+	struct rt_rq *rt_rq = rt_rq_of_se(&current->rt);
+	struct sched_dl_entity *dl_se = dl_group_of(rt_rq);
 	long response_time = timenow()-p->struhar_instance_start;
 
 	trace_printk("XDEBUG:%d:CONTROLLER\n", p->pid);
 	trace_printk("XDEBUG:%d:CONTROLLER:struhar_exp_response_time=%lld\n", p->pid, p->struhar_exp_response_time);
+	trace_printk("XDEBUG:%d:CONTROLLER:real_response_time=%lld\n", p->pid, response_time);
+
+	// what is current budget?
+
+
 
 
 }

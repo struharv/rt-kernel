@@ -502,6 +502,7 @@ struct sched_dl_entity {
 	u64				dl_period;	/* Separation of two instances (period) */
 	u64				dl_bw;		/* dl_runtime / dl_period		*/
 	u64				dl_density;	/* dl_runtime / dl_deadline		*/
+	u64				struhar_runtime;
 
 	
 	/*
