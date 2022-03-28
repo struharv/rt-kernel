@@ -2,6 +2,7 @@
 #include <linux/string.h>
 #include <linux/syscalls.h>
 #include <linux/time.h>
+#include <linux/math64.h>
 
 #include "../kernel/sched/sched.h"
 
@@ -29,26 +30,44 @@ void controller(struct task_struct *p) {
 	long response_time = timenow()-p->struhar_instance_start;
 
 	long runtime_max = 18000000;
-	long runtime_min = 2000000;
+	long runtime_min = 2000000; //2 ms
 
 
 	trace_printk("XDEBUG:%d:CONTROLLER\n", p->pid);
 	trace_printk("XDEBUG:%d:CONTROLLER:struhar_exp_response_time=%lld\n", p->pid, p->struhar_exp_response_time);
 	trace_printk("XDEBUG:%d:CONTROLLER:real_response_time=%lld\n", p->pid, response_time);
 
-	//if (response_time > p->struhar_exp_response_time) {
-	dl_se->dl_runtime += 100000;
+	double K = 10;
+	s64 error = response_time-p->struhar_exp_response_time;
+	s64 res = div_s64(error, 100); 
 
-	if (dl_se->dl_runtime > runtime_max)
+
+	dl_se->dl_runtime += res;
+	
+
+	trace_printk("XDEBUG:%d:CONTROLLER:error=%lld:dl_runtime=%lld:div=%lld\n", p->pid, error, dl_se->dl_runtime, res);
+
+	trace_printk("XDEBUG:%d:CONTROLLER:xnew-runtime=%lld\n", p->pid, dl_se->dl_runtime);	
+	dl_se->dl_runtime = min(max(dl_se->dl_runtime, runtime_min), runtime_max);
+	trace_printk("XDEBUG:%d:CONTROLLER:new-runtime=%lld\n", p->pid, dl_se->dl_runtime);	
+
+	//if (response_time > p->struhar_exp_response_time) {
+	//if (response_time > p->struhar_exp_response_time)
+	//dl_se->dl_runtime += 100000;
+
+
+	//if (response_time < )
+
+	/*if (dl_se->dl_runtime > runtime_max)
 	{
 		dl_se->dl_runtime = runtime_min;	
-	}
+	}*/
 
 	//} else {
 	//	dl_se->dl_runtime -= 1000000;
 
 	//}
-	trace_printk("XDEBUG:%d:CONTROLLER:new-runtime=%lld\n", p->pid, dl_se->dl_runtime);	
+	
 	// what is current budget?
 
 
@@ -90,6 +109,7 @@ asmlinkage long sys_struhar_done(void) {
 
 	//p = current;
 	//current->struhar_response_time = 0;
+	current->struhar_job_instance += 1;
 	trace_printk("XDEBUG::%d:RESPONSE_TIME:response=%lld\n", response_time);
     trace_printk("XDEBUG:%d:SYSCALL_DONE\n", current->pid);
     

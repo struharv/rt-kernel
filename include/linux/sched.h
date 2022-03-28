@@ -621,6 +621,7 @@ struct task_struct {
 	u64				struhar_exp_response_time;
 	u64				struhar_budget;
 	u64				struhar_instance_start;
+	u64				struhar_job_instance;
 
 #ifdef CONFIG_SMP
 	struct llist_node		wake_entry;
