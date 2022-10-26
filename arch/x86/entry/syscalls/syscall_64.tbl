@@ -358,6 +358,11 @@
 434 64  struhar_done	sys_struhar_done
 435 64  struhar_start	sys_struhar_start
 436 64  struhar_init	__x64_sys_struhar_init
+438 64  struhar_xcontrol	__x64_sys_struhar_xcontrol
+
+
+
+
 
 #
 # x32-specific system call numbers start at 512 to avoid cache impact

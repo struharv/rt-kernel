@@ -60,6 +60,8 @@ __read_mostly int scheduler_running;
  * default: 0.95s
  */
 int sysctl_sched_rt_runtime = 950000;
+
+/* struct for node controller */
 struct struhar_node_controller node_controller;
 
 /*
@@ -5868,10 +5870,6 @@ void __init sched_init_smp(void)
 	if (set_cpus_allowed_ptr(current, housekeeping_cpumask(HK_FLAG_DOMAIN)) < 0)
 		BUG();
 	sched_init_granularity();
-
-	printk("struharv:sched_init_smp init node_controller");
-	node_controller.containerA_pid = 0;
-	node_controller.containerB_pid = 0;
 
 	init_sched_rt_class();
 	init_sched_dl_class();

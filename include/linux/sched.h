@@ -522,7 +522,7 @@ struct sched_dl_entity {
 	 * next firing of dl_timer.
 	 *
 	 * @dl_boosted tells if we are boosted due to DI. If so we are
-	 * outside bandwidth enforcement mechanism (but only until we
+	 * outside 	th enforcement mechanism (but only until we
 	 * exit the critical section);
 	 *
 	 * @dl_yielded tells if task gave up the CPU before consuming
@@ -590,6 +590,15 @@ enum perf_event_task_context {
 	perf_nr_task_contexts,
 };
 
+
+struct struhar_node_controller {
+	
+	u64 containerA;
+	u64 containerB;
+	pid_t containerA_pid;
+	pid_t containerB_pid;
+};
+
 struct wake_q_node {
 	struct wake_q_node *next;
 };
@@ -622,6 +631,7 @@ struct task_struct {
 	u64				struhar_budget;
 	u64				struhar_instance_start;
 	u64				struhar_job_instance;
+	struct struhar_node_controller *node_controller;
 
 #ifdef CONFIG_SMP
 	struct llist_node		wake_entry;
