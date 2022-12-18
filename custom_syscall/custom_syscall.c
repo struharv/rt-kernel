@@ -6,7 +6,9 @@
 
 #include "../kernel/sched/sched.h"
 
-#define TOTAL_BUDGET 5000000
+#define TOTAL_BUDGET 10000000
+#define DIST_EXCEEDED 40
+#define RES_EXCEEDED 1
 
 unsigned long timenow(void) {
 	struct timespec timecheck;
@@ -17,15 +19,24 @@ unsigned long timenow(void) {
 
 long long total_budget = TOTAL_BUDGET;
 
+int disturbance_count_1 = 0;
+int disturbance_count_2 = 0;
+
+
 SYSCALL_DEFINE1(struhar_init, long, response_time) {
 	trace_printk("XDEBUG:%d:struhar_init:response_time=%lld\n", current->pid, response_time);
-
+	total_budget = TOTAL_BUDGET;
+	
 	current->struhar_exp_response_time = response_time;
 	if (current->node_controller->containerA_pid != 0 && current->node_controller->containerB_pid != 0) {
 		// reset
 		trace_printk("XDEBUG:%d:struhar_init-restart\n", current->pid);		
 		current->node_controller->containerA_pid = 0;
 		current->node_controller->containerB_pid = 0;
+		
+		disturbance_count_1 = 0;
+		disturbance_count_2 = 0;
+
 		total_budget = TOTAL_BUDGET;
 	}
 
@@ -74,23 +85,28 @@ void node_control(struct task_struct *p) {
 		return;
 	}*/
 
-
-	if (total_budget > 0) {
+	long disturbance = current->struhar_exp_response_time - response_time;
+	if (disturbance < 0 && total_budget > 0 ) {
 		trace_printk("XDEBUG:%d:NODE-CONTROLLER:runtime=%lld\n", p->pid, dl_se->dl_runtime);
-		int portion = total_budget * 5 / 100;
-		total_budget -= portion;
+		int portion = -disturbance/120;
 
-		dl_se->dl_runtime += portion;  //0.95 
+		if (portion > total_budget) {
+			portion = total_budget;
+		}
+		total_budget -= portion;
+		dl_se->dl_runtime += portion;
+		  
 		trace_printk("XDEBUG:%d:NODE-CONTROLLER:xnew-runtime=%lld\n", p->pid, dl_se->dl_runtime);
 	}
 
 }
 
 
-void container_controller(struct task_struct *p) {
+long container_controller(struct task_struct *p) {
 	struct rt_rq *rt_rq = rt_rq_of_se(&current->rt);
 	struct sched_dl_entity *dl_se = dl_group_of(rt_rq);
 	long response_time = timenow()-p->struhar_instance_start;
+	long res = 0;
 
 	if (current->struhar_exp_response_time == -1) {
 		trace_printk("XDEBUG:%d:CONTROLLER-NEW-DISABLED\n", p->pid);
@@ -108,39 +124,69 @@ void container_controller(struct task_struct *p) {
 
 	if (disturbance > 0) { // lower budget is needed
 		
-		//dl_se->dl_runtime = dl_se->dl_runtime - disturbance/100;  //0.95
-
-
-		if (dl_se->dl_runtime < 5000000) {
-			dl_se->dl_runtime = 5000000;
+		if (p->pid == current->node_controller->containerA_pid) {
+			disturbance_count_1 = 0;
 		}
-		// trace_printk("XDEBUG:%d:CONTROLLER:xnew-runtime=%lld\n", p->pid, dl_se->dl_runtime);
-	} else{
+
+		if (p->pid == current->node_controller->containerB_pid) {
+			disturbance_count_2 = 0;
+		}
+
+		trace_printk("XDEBUG:%d:DISTURBANCE_COUNTS:dc1=%ld:dc2=%ld\n", p->pid, disturbance_count_1, disturbance_count_2);
+
+
+		long amount = disturbance/450; //400
 		
-		//dl_se->dl_runtime = dl_se->dl_runtime - disturbance/100;
+		dl_se->dl_runtime -= amount;  
+		total_budget += amount;
+		
+		//dl_se->dl_runtime =  dl_se->dl_runtime *98/100;
+
+
+
+		/*if (dl_se->dl_runtime < 5000000) {
+			dl_se->dl_runtime = 5000000;
+		}*/
+		// trace_printk("XDEBUG:%d:CONTROLLER:xnew-runtime=%lld\n", p->pid, dl_se->dl_runtime);
+	} else { // more
+		long amount = -disturbance/200; //300,400
+		if (amount > total_budget) {
+			amount = total_budget;
+		}
+
+		/*if (p->pid == current->node_controller->containerA_pid) {
+			disturbance_count_1 += 1;
+			if (disturbance_count_1 > DIST_EXCEEDED){
+				res = RES_EXCEEDED;
+				trace_printk("XDEBUG:%d:RELEASE:budget=%lld\n", p->pid, dl_se->dl_runtime);
+				total_budget += dl_se->dl_runtime;
+			}
+		}
+
+		if (p->pid == current->node_controller->containerB_pid) {
+			disturbance_count_2 += 1;
+			if (disturbance_count_2 > DIST_EXCEEDED){
+				res = RES_EXCEEDED;
+				trace_printk("XDEBUG:%d:RELEASE:budget=%lld\n", p->pid, dl_se->dl_runtime);
+				total_budget += dl_se->dl_runtime;				
+			}
+		}*/
+
+		trace_printk("XDEBUG:%d:DISTURBANCE_COUNTS:dc1=%ld:dc2=%ld\n", p->pid, disturbance_count_1, disturbance_count_2);
+
+		dl_se->dl_runtime += amount;
+		total_budget -= amount;
+
+
+		//dl_se->dl_runtime =  dl_se->dl_runtime *102/100;
 	}
 
 
 
 	trace_printk("XDEBUG:%d:CONTROLLER:xnew-runtime=%lld\n", p->pid, dl_se->dl_runtime);
-	
-	/*
-	if (current->struhar_exp_response_time > response_time) {
-		trace_printk("XDEBUG:%d:CONTROLLER:runtime=%lld\n", p->pid, dl_se->dl_runtime);
-		dl_se->dl_runtime = dl_se->dl_runtime * 95 / 100;  //0.95
-		if (dl_se->dl_runtime < 5000000) {
-			dl_se->dl_runtime = 5000000;
-		}
-		trace_printk("XDEBUG:%d:CONTROLLER:xnew-runtime=%lld\n", p->pid, dl_se->dl_runtime);
-	} else {
-		trace_printk("XDEBUG:%d:CONTROLLER:runtime=%lld\n", p->pid, dl_se->dl_runtime);
-		dl_se->dl_runtime = dl_se->dl_runtime * 105 / 100;  //1.05 
-		if (dl_se->dl_runtime < 22000000) {
-			dl_se->dl_runtime = 22000000;
-		}
-		trace_printk("XDEBUG:%d:CONTROLLER:xnew-runtime=%lld\n", p->pid, dl_se->dl_runtime);
-	}*/
 
+
+	return res;
 }
 
 
@@ -172,30 +218,25 @@ asmlinkage long sys_struhar_done(void) {
 	struct rq_flags rf;
 	struct rq *rq;
 	long response_time = timenow()-current->struhar_instance_start;
+	long disturbance = current->struhar_exp_response_time - response_time;
 
 	//p = current;
 	//current->struhar_response_time = 0;
 	current->struhar_job_instance += 1;
 	
     trace_printk("XDEBUG:%d:SYSCALL_DONE\n", current->pid);
-    trace_printk("XDEBUG:%d:RESPONSE_TIME:response=%lld:budget=%lld:target_response_time=%lld:now=%ld\n", 
+    trace_printk("XDEBUG:%d:RESPONSE_TIME:response=%lld:budget=%lld:target_response_time=%lld:now=%ld:total_budget=%ld:disturbance=%ld\n", 
     	current->pid, 
     	response_time, 
     	dl_se->dl_runtime,
     	current->struhar_exp_response_time,
-    	timenow());
+    	timenow(),
+    	total_budget,
+    	disturbance);
     
-    printk("XDEBUG:%d:RESPONSE_TIME:response=%lld:budget=%lld:target_response_time=%lld:now=%ld\n", 
-    	current->pid, 
-    	response_time, 
-    	dl_se->dl_runtime,
-    	current->struhar_exp_response_time,
-    	timenow());
-
-	//container_controller(current);
-	node_control(current);
-
+	long res = 0;
+	container_controller(current);
+	// node_control(current);
 	
-	
-    return 0;
+    return res;
 }
