@@ -1403,6 +1403,7 @@ asmlinkage long sys_struhar_done(void);
 asmlinkage long sys_struhar_start(void);
 asmlinkage long sys_struhar_init(long);
 asmlinkage long sys_struhar_xcontrol(long, long);
+asmlinkage long sys_struhar_done2(long, long);
 
 #endif
 
