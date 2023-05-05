@@ -25,14 +25,13 @@
 #define RUNTIME_VERY_HIGH base_runtime * 120 / 100
 #define RUNTIME_HIGH_NS base_runtime * 110 / 100
 #define RUNTIME_NORMAL_NS base_runtime * 100 / 100
-#define RUNTIME_LOW_NS base_runtime * 80 / 100
+#define RUNTIME_LOW_NS base_runtime * 50 / 100
 
 
 unsigned long timenow(void) {
 	struct timespec timecheck;
 	getnstimeofday(&timecheck);
 	return timecheck.tv_sec * 1000000000 + (long)timecheck.tv_nsec;
-	
 }
 
 long long total_budget = TOTAL_BUDGET;
@@ -113,9 +112,12 @@ SYSCALL_DEFINE2(struhar_done2, long, expected, long, actual) {
 	long period;
 	struct rt_rq *rt_rq = rt_rq_of_se(&current->rt);
 	struct sched_dl_entity *dl_se = dl_group_of(rt_rq);
+	struct sched_dl_entity *pi_se = &current->dl;
 
 	add_history(err);
 	QoC = compute_QoC(LAST_VALUES);
+
+	trace_printk("XDEBUG:%d:struhar_done2_pi_se:pi_se=%ld\n", current->pid, pi_se->dl_runtime);
 	trace_printk("XDEBUG:%d:struhar_done2_err:err=%ld\n", current->pid, err);
 	trace_printk("XDEBUG:%d:struhar_done2_qoc:qoc=%ld\n", current->pid, QoC);
 	trace_printk("XDEBUG:%d:struhar_done2_response_time:response_time=%ld\n", current->pid, response_time);
@@ -199,7 +201,6 @@ asmlinkage long sys_struhar_done(void) {
 	struct rq *rq;
 	long response_time = timenow()-current->struhar_instance_start;
 	long disturbance = current->struhar_exp_response_time - response_time;
-
 	
 	current->struhar_job_instance += 1;
 	
